@@ -1,0 +1,119 @@
+%-----------------------------------Constructores-----------------------------------
+
+%pixbit-d
+%Entrada: Posicion x, Posicion y, Bit, profundidad
+%Salida: [Posicion x, Posicion y, Bit, profundidad]
+
+pixbitd(X,Y,Bit,D,[X,Y,Bit,D]):-
+    integer(X),
+    integer(Y),
+    Bit = 0 ; Bit = 1,
+    integer(D).
+
+
+%pixbit-d
+% Dominio: Posicion x(int) , Posicion y(int) , Canal R(int) , Canal G(int) , Canal B(int) ,profundidad
+%Recorrido: [Posicion x, Posicion y, Canal R, Canal G, Canal B, profundidad]
+
+pixrgbd(X,Y,R,G,B,D,[X,Y,R,G,B,D]):-
+    integer(X),
+    integer(Y),
+    between(0,255,R),
+    between(0,255,G),
+    between(0,255,B),
+    integer(D).
+
+%pixbit-d
+%Entrada: Posicion x, Posicion y, Hex, profundidad
+%Salida: [Posicion x, Posicion y, Hex, profundidad]
+
+pixhexd(X,Y,Hex,D,[X,Y,Hex,D]):-
+    integer(X),
+    integer(Y),
+    string(Hex),
+    integer(D).
+
+%2) Image
+%Entrada: "Color_Comprimido", Ancho, Alto, [Lista de pixeles]
+%Salida: [Color_Comprimido,Ancho,Alto,[Lista de pixeles]]
+
+image(Color_Comprimido,Ancho,Alto,[H|T], [Color_Comprimido,Ancho,Alto,[H|T]]):-
+    string(Color_Comprimido),
+    integer(Ancho),
+    integer(Alto).
+%-----------------------------------Selectores-----------------------------------
+getAlto([_,Alto,_,_], Alto).
+getAncho([_,_,Ancho,_],Ancho).
+getColor_Compresed([Color|_],Color).
+getPixels([_,_,_,[H|T]], [H|T]).
+
+
+getx([X|_], X).
+gety([_,Y|_], Y).
+
+getBit([_,_,Bit,_],Bit).
+getHex([_,_,Hex,_],Hex).
+getR([_,_,R,_,_,_] , R).
+getG([_,_,_,G,_,_] , G).
+getB([_,_,_,_,B,_] , B).
+getDbithex([_,_,_,D],D).
+getDrgb([_,_,_,_,_,D] , D).
+
+%-----------------------------------Modificadores-----------------------------------
+setAlto([Color,_,Ancho,[H|T]], NewAlto, [Color,NewAlto,Ancho,[H|T]]):-
+    integer(NewAlto).
+setAncho([Color,Alto,_,[H|T]], NewAncho, [Color,Alto,NewAncho,[H|T]]):-
+    integer(NewAncho).
+setColor_Compressed([_,Alto,Ancho,[H|T]],NewColor, [NewColor,Alto,Ancho,[H|T]]):-
+    string(NewColor);
+    integer(NewColor).
+setPixels([Color,Alto,Ancho,_], [NewH|NewT], [Color,Alto,Ancho,[NewH|NewT]]).
+          
+
+setx([_|T], NewX, [NewX|T]):-
+    integer(NewX).
+sety([X,_|T], NewY, [X,NewY|T]):-
+    integer(NewY).
+setbit([X,Y,_,D], NewBit, [X,Y,NewBit,D]):-
+    NewBit = 0 ; NewBit = 1.
+sethex([X,Y,_,D], NewHex, [X,Y,NewHex,D]):-
+    string(NewHex).
+setr([X,Y,_,G,B,D], NewR, [X,Y,NewR,G,B,D]):-
+    integer(NewR).
+setg([X,Y,R,_,B,D], NewG, [X,Y,R,NewG,B,D]):-
+    integer(NewG).
+setb([X,Y,R,G,_,D], NewB, [X,Y,R,G,NewB,D]):-
+    integer(NewB).   
+setd_bithex([X,Y,Color,_],NewD, [X,Y,Color,NewD]):-
+    integer(NewD).
+setd_rgb([X,Y,R,G,B,_], NewD, [X,Y,R,G,B,NewD]):-
+    integer(NewD).
+%-----------------------------------Funciones----------------------------------
+%3)imageIsBitmap
+%Dominio: image
+%Recorrido: boolean
+imageIsBitmap([_,_,_,[H|_]]) :-
+    pixbitd(_,_,_,_, H ).
+
+
+%4)imageIsPixmap
+%Dominio: image
+%Recorrido: boolean
+imageIsPixmap([_,_,_,[H|_]]) :-
+    pixrgbd(_,_,_,_,_,_, H ).
+
+%5)imageIsHexmap
+%Dominio: image
+%Recorrido: boolean
+imageIsHexmap([_,_,_,[H|_]]) :-
+    pixrgbd(_,_,_,_, H ).
+
+%6)imageIsCompressed
+%Dominio: Image
+%Recorrido: Boolean
+%Descripcion: Como se define en el Tda imagen que el primer elemento es el string
+%del color comprimido, si el string es vacío significa es no ha sido comprimida.
+
+imageIsCompressed([Color|_]):-
+                  Color \= "" .
+
