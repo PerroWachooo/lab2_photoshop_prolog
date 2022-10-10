@@ -1,3 +1,12 @@
+%-----------------------------------Imagenes de prueba-----------------------------------
+/* 
+pixbitd( 0, 0, 1, 10, PA), pixbitd( 0, 1, 0, 20, PB), pixbitd( 1, 0, 0, 30, PC), pixbitd( 1, 1, 1, 4, PD), image("#FFFFFF", 2, 2, [PA, PB, PC, PD], I)
+pixhexd(0, 0,"asdf",1,PA), pixhexd(0, 1, "asddf", 20, PB), pixhexd(1, 0,"adsf",30,PC), pixhexd(1, 1,"hgda",50, PD), image("", 2, 2, [PA, PB, PC, PD], I)
+pixrgbd( 0, 0, 10, 10, 10, 10, PA), pixrgbd( 0, 1, 20, 20, 20, 20, PB), pixrgbd( 1, 0, 30, 30, 30, 30, PC), pixrgbd( 1, 1, 40, 40, 40, 40, PD), image("", 2, 2, [PA, PB, PC, PD], I)
+*/
+
+
+
 %-----------------------------------Constructores-----------------------------------
 
 %pixbit-d
@@ -116,4 +125,27 @@ imageIsHexmap([_,_,_,[H|_]]) :-
 
 imageIsCompressed([Color|_]):-
                   Color \= "" .
+
+%7) imageFlipH
+%Dominio: Imagen
+%Recorrido: Imagen
+%imagenFlipH([Color,Alto,Ancho,[H|T]], [Color,Alto,Ancho,[H|T]]):-
+ 
+
+imageFlipH([Color,Alto,Ancho, Pixeles], [Color,Alto,Ancho, NewPixeles]):-
+    maplist(pixelFlipH(Alto),Pixeles,NewPixeles).
+                          
+    
+pixelFlipH(Alto, [X,Y|T] ,[X,NewY|T]):-
+    NewY is (Alto-1)-Y.
+
+%(8 imageFlipV
+%Dominio: Imagen
+%Recorrido: Imagen
+imageFlipV([Color,Alto,Ancho, Pixeles], [Color,Alto,Ancho, NewPixeles]):-
+    maplist(pixelFlipV(Ancho),Pixeles,NewPixeles).
+
+pixelFlipV(Ancho, [X,Y|T] ,[NewX,Y|T]):-
+    NewX is (Ancho-1)-X.
+
 
