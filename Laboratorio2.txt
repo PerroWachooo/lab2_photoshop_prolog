@@ -201,3 +201,52 @@ abs(Intin, Intout):-
     (Intin >= 0, Intout = Intin);
     (Intin < 0, Intout is Intin * -1).
 
+%10) imageRGBToHex
+%Dominio:image X image
+
+imageRGBtoHex(I,[Color,Alto,Ancho,NewPixeles]):-
+    getColor_Compresed(I,Color),
+    getAlto(I,Alto),
+    getAncho(I,Ancho),
+    getPixels(I,Pixeles),
+    maplist(pixrgb_to_pixhex,Pixeles,NewPixeles).
+
+    
+pixrgb_to_pixhex(Pixelin,Pixelout):-
+    getx(Pixelin,X),
+    gety(Pixelin,Y),
+    getD(Pixelin,D),
+    getR(Pixelin,R),
+    getG(Pixelin,G),
+    getB(Pixelin,B),
+    
+    numtohex(R, RHex),
+    numtohex(G, GHex),
+    numtohex(B, BHex),
+    
+    string_concat('#',RHex, C1),
+    string_concat(C1,GHex,C2),
+    string_concat(C2,BHex,ColorHex),
+    pixhex(X,Y,ColorHex,D,Pixelout).
+    
+numtohex(Int, Hex) :-
+    Rem1 is Int//16 rem 16,
+    Rem2 is Int rem 16,
+
+    ((Rem1 <10, number_string(Rem1,Hex1)); 
+    (Rem1 =10, Hex1 = 'A'); 
+    (Rem1 =11, Hex1 = 'B');
+    (Rem1 =12, Hex1 = 'C');
+    (Rem1 =13, Hex1 = 'D');
+    (Rem1 =14, Hex1 = 'E');
+    (Rem1 =15, Hex1 = 'F')),
+
+    ((Rem2<10, number_string(Rem2,Hex2));
+    (Rem2=10, Hex2 = 'A');
+    (Rem2=11, Hex2 = 'B');
+    (Rem2=12, Hex2 = 'C');
+    (Rem2=13, Hex2 = 'D');
+    (Rem2=14, Hex2 = 'E');
+    (Rem2=15, Hex2 = 'F')),
+    string_concat(Hex1,Hex2,Hex).
+
