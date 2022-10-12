@@ -148,4 +148,56 @@ imageFlipV([Color,Alto,Ancho, Pixeles], [Color,Alto,Ancho, NewPixeles]):-
 pixelFlipV(Ancho, [X,Y|T] ,[NewX,Y|T]):-
     NewX is (Ancho-1)-X.
 
+%(9 Crop
+%Dominio: image X x1 (int) X y1 (int) X x2 (int) X y2 (int) X image
+
+imageCrop([Color, _, _, Pixeles],X1,Y1,X2,Y2 , [Color, NewAlto, NewAncho, NewPixeles]):-
+    H is X2-X1,
+    abs(H,Hf),
+    NewAlto is Hf + 1,
+    W is Y2-Y1,
+    abs(W,Wf),
+    NewAncho is Wf + 1,
+    
+    min(X1,X2, Xmin),
+    max(X1,X2, Xmax),
+    min(Y1,Y2, Ymin),
+    max(Y1,Y2, Ymax),
+	include(dentro_de_margen(Xmin,Xmax,Ymin,Ymax),Pixeles, Pixelesfiltred),
+	maplist(cambio_cords_crop(Xmin,Ymin),Pixelesfiltred,NewPixeles).
+    
+    
+cambio_cords_crop(Xmin,Ymin,Pixelin,Pixelout):-
+        getx(Pixelin,X),
+        gety(Pixelin,Y),
+        NewX is X-Xmin,
+        NewY is Y-Ymin,
+    	setx(Pixelin, NewX, P1),
+    	sety(P1,NewY, Pixelout).
+        
+        
+        
+        
+dentro_de_margen(Xmin,Xmax,Ymin,Ymax,Pixel):-
+    getx(Pixel,X),
+    gety(Pixel,Y),
+    (X>=Xmin, X=<Xmax),
+    (Y >= Ymin, Y =< Ymax).
+
+
+    
+    
+min(Int1, Int2, Int3):-
+    (Int1 < Int2, Int3 = Int1);
+    (Int1 > Int2, Int3 = Int2);
+    (Int1 = Int2, Int3 = Int2).
+
+max(Int1, Int2, Int3):-
+    (Int1 > Int2, Int3 = Int1);
+    (Int1 < Int2, Int3 = Int2);
+    (Int1 = Int2, Int3 = Int2).
+
+abs(Intin, Intout):-
+    (Intin >= 0, Intout = Intin);
+    (Intin < 0, Intout is Intin * -1).
 
