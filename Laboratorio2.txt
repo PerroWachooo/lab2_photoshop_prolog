@@ -47,11 +47,11 @@ pixhex(X,Y,Hex,D,[X,Y,Hex,D]):-
 %Salida: [Color_Comprimido,Ancho,Alto,[Lista de pixeles]]
 
 image(Color_Comprimido,Ancho,Alto,[H|T], [Color_Comprimido,Ancho,Alto,[H|T]]):-
-    string(Color_Comprimido),
     integer(Ancho),
     integer(Alto).
 %-----------------------------------Selectores-----------------------------------
-getFirst([H|_], H).
+getHead([H|_], H).
+getSecond([_,S|_],S).
 getAlto([_,Alto,_,_], Alto).
 getAncho([_,_,Ancho,_],Ancho).
 getColor_Compresed([Color|_],Color).
@@ -72,9 +72,8 @@ setAlto([Color,_,Ancho,[H|T]], NewAlto, [Color,NewAlto,Ancho,[H|T]]):-
     integer(NewAlto).
 setAncho([Color,Alto,_,[H|T]], NewAncho, [Color,Alto,NewAncho,[H|T]]):-
     integer(NewAncho).
-setColor_Compressed([_,Alto,Ancho,[H|T]],NewColor, [NewColor,Alto,Ancho,[H|T]]):-
-    string(NewColor);
-    integer(NewColor).
+setColor_Compressed([_,Alto,Ancho,[H|T]],NewColor, [NewColor,Alto,Ancho,[H|T]]).
+
 setPixels([Color,Alto,Ancho,_], [NewH|NewT], [Color,Alto,Ancho,[NewH|NewT]]).
           
 
@@ -86,16 +85,15 @@ setbit([X,Y,_,D], NewBit, [X,Y,NewBit,D]):-
     NewBit = 0 ; NewBit = 1.
 sethex([X,Y,_,D], NewHex, [X,Y,NewHex,D]):-
     string(NewHex).
-setr([X,Y,_,G,B,D], NewR, [X,Y,NewR,G,B,D]):-
+setr([X,Y,[_,G,B],D],NewR, [X,Y,[NewR,G,B],D]):-
     integer(NewR).
-setg([X,Y,R,_,B,D], NewG, [X,Y,R,NewG,B,D]):-
+setg([X,Y,[R,_,B],D], NewG, [X,Y,[R,NewG,B],D]):-
     integer(NewG).
-setb([X,Y,R,G,_,D], NewB, [X,Y,R,G,NewB,D]):-
+setb([X,Y,[R,G,_],D], NewB, [X,Y,[R,G,NewB],D]):-
     integer(NewB).   
-setd_bithex([X,Y,Color,_],NewD, [X,Y,Color,NewD]):-
+setdD([X,Y,Color,_],NewD, [X,Y,Color,NewD]):-
     integer(NewD).
-setd_rgb([X,Y,R,G,B,_], NewD, [X,Y,R,G,B,NewD]):-
-    integer(NewD).
+
 %-----------------------------------Funciones----------------------------------
 %3)imageIsBitmap
 %Dominio: image
@@ -268,7 +266,7 @@ pixel_histogram([],[]).
 %caso base 2: cuando no se ha hecho ningun histograma, es "el primer llamado"
 pixel_histogram(Pixels,[]):-
      %se toma el primer pixel
-    getFirst(Pixels, Head_Pixel),
+    getHead(Pixels, Head_Pixel),
     
     %se toma el color del primer pixel
     getColor(Head_Pixel,ColorPixel),   
@@ -289,7 +287,7 @@ pixel_histogram(Pixels,[]):-
 %caso recursivo
 pixel_histogram(Pixels,[[Repeticiones,ColorPixel]|Histograma]):-
     %se toma el primer pixel
-    getFirst(Pixels, Head_Pixel),
+    getHead(Pixels, Head_Pixel),
     
     %se toma el color del primer pixel
     getColor(Head_Pixel,ColorPixel),   
@@ -336,4 +334,33 @@ rotatepixel(AltoImagen,Pixelin,PixelOut):-
     sety(Pixelmod, NewY, PixelOut).
     
     
+   
+%13) imageCompress
+%Dominio: image X image
+%Descripcion: comprime una imagen eliminando el color más frecuente, guardando la
+%informaciion del color
+
+imageCompress(ImageIn,ImageCompressed):-
+    %se saca el histograma de la imagen
+    imageToHistogram(ImageIn,Histogram),
+    
+    %se ordena en orden decreciente de acuerdo a la frecuenca
+    sort(0,@>,Histogram, HistogramSort),
+    
+    %se obtiene la cabeza del histograma ordenado ordenada(el mas frecuente)
+    getHead(HistogramSort,PixelMasFrecuente),
+    
+    %se saca el segundo elemento de el elemnto anterior(el color del mas frecuente)
+    getSecond(PixelMasFrecuente,ColorFrecuente),
+    
+    getPixels(ImageIn, Pixeles),
+    
+    %se filtra la lista de pixeles iniciales, dejando los que tengan el color más frecuente
+    exclude(isSameColor(ColorFrecuente),Pixeles,PixelesCompressed),
+    
+    %crea una nueva imagen con los pixeles filtrados
+    setPixels(ImageIn,PixelesCompressed, ImageMod),
+    
+    %a la imagen anterior le agrega el color más frecuente para guardarlo en el tda
+    setColor_Compressed(ImageMod,ColorFrecuente,ImageCompressed).
     
