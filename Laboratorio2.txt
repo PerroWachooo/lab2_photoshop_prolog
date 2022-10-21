@@ -1,8 +1,8 @@
 %-----------------------------------Imagenes de prueba-----------------------------------
 /* 
-pixbitd( 0, 0, 1, 10, PA), pixbitd( 0, 1, 0, 20, PB), pixbitd( 1, 0, 0, 30, PC), pixbitd( 1, 1, 1, 4, PD), image("#FFFFFF", 2, 2, [PA, PB, PC, PD], I)
-pixhexd(0, 0,"asdf",1,PA), pixhexd(0, 1, "asddf", 20, PB), pixhexd(1, 0,"adsf",30,PC), pixhexd(1, 1,"hgda",50, PD), image("", 2, 2, [PA, PB, PC, PD], I)
-pixrgbd( 0, 0, 10, 10, 10, 10, PA), pixrgbd( 0, 1, 20, 20, 20, 20, PB), pixrgbd( 1, 0, 30, 30, 30, 30, PC), pixrgbd( 1, 1, 40, 40, 40, 40, PD), image("", 2, 2, [PA, PB, PC, PD], I)
+pixbit( 0, 0, 1, 10, PA), pixbit( 0, 1, 0, 20, PB), pixbit( 1, 0, 0, 30, PC), pixbit( 1, 1, 1, 4, PD), image("#FFFFFF", 2, 2, [PA, PB, PC, PD], I)
+pixhex(0, 0,"asdf",1,PA), pixhex(0, 1, "asddf", 20, PB), pixhex(1, 0,"adsf",30,PC), pixhex(1, 1,"hgda",50, PD), image("", 2, 2, [PA, PB, PC, PD], I)
+pixrgb( 0, 0, 10, 10, 10, 10, PA), pixrgb( 0, 1, 20, 20, 20, 20, PB), pixrgb( 1, 0, 30, 30, 30, 30, PC), pixrgb( 1, 1, 40, 40, 40, 40, PD), image("", 2, 2, [PA, PB, PC, PD], I)
 */
 
 
@@ -13,18 +13,18 @@ pixrgbd( 0, 0, 10, 10, 10, 10, PA), pixrgbd( 0, 1, 20, 20, 20, 20, PB), pixrgbd(
 %Entrada: Posicion x, Posicion y, Bit, profundidad
 %Salida: [Posicion x, Posicion y, Bit, profundidad]
 
-pixbitd(X,Y,Bit,D,[X,Y,Bit,D]):-
+pixbit(X,Y,Bit,D,[X,Y,Bit,D]):-
     integer(X),
     integer(Y),
     Bit = 0 ; Bit = 1,
     integer(D).
 
 
-%pixbit-d
+%pixrgb
 % Dominio: Posicion x(int) , Posicion y(int) , Canal R(int) , Canal G(int) , Canal B(int) ,profundidad
 %Recorrido: [Posicion x, Posicion y, Canal R, Canal G, Canal B, profundidad]
 
-pixrgbd(X,Y,R,G,B,D,[X,Y,R,G,B,D]):-
+pixrgb(X,Y,R,G,B,D,[X,Y,[R,G,B],D]):-
     integer(X),
     integer(Y),
     between(0,255,R),
@@ -36,7 +36,7 @@ pixrgbd(X,Y,R,G,B,D,[X,Y,R,G,B,D]):-
 %Entrada: Posicion x, Posicion y, Hex, profundidad
 %Salida: [Posicion x, Posicion y, Hex, profundidad]
 
-pixhexd(X,Y,Hex,D,[X,Y,Hex,D]):-
+pixhex(X,Y,Hex,D,[X,Y,Hex,D]):-
     integer(X),
     integer(Y),
     string(Hex),
@@ -51,6 +51,7 @@ image(Color_Comprimido,Ancho,Alto,[H|T], [Color_Comprimido,Ancho,Alto,[H|T]]):-
     integer(Ancho),
     integer(Alto).
 %-----------------------------------Selectores-----------------------------------
+getFirst([H|_], H).
 getAlto([_,Alto,_,_], Alto).
 getAncho([_,_,Ancho,_],Ancho).
 getColor_Compresed([Color|_],Color).
@@ -60,13 +61,11 @@ getPixels([_,_,_,[H|T]], [H|T]).
 getx([X|_], X).
 gety([_,Y|_], Y).
 
-getBit([_,_,Bit,_],Bit).
-getHex([_,_,Hex,_],Hex).
-getR([_,_,R,_,_,_] , R).
-getG([_,_,_,G,_,_] , G).
-getB([_,_,_,_,B,_] , B).
-getDbithex([_,_,_,D],D).
-getDrgb([_,_,_,_,_,D] , D).
+getColor([_,_,Color,_],Color).
+getR([_,_,[R,_,_],_] , R). %entrada: pixel
+getG([_,_,[_,G,_],_] , G).
+getB([_,_,[_,_,B],_] , B).
+getD([_,_,_,D],D).%entrada: Pixel
 
 %-----------------------------------Modificadores-----------------------------------
 setAlto([Color,_,Ancho,[H|T]], NewAlto, [Color,NewAlto,Ancho,[H|T]]):-
@@ -102,20 +101,20 @@ setd_rgb([X,Y,R,G,B,_], NewD, [X,Y,R,G,B,NewD]):-
 %Dominio: image
 %Recorrido: boolean
 imageIsBitmap([_,_,_,[H|_]]) :-
-    pixbitd(_,_,_,_, H ).
+    pixbit(_,_,_,_, H ).
 
 
 %4)imageIsPixmap
 %Dominio: image
 %Recorrido: boolean
 imageIsPixmap([_,_,_,[H|_]]) :-
-    pixrgbd(_,_,_,_,_,_, H ).
+    pixrgb(_,_,_,_,_,_, H ).
 
 %5)imageIsHexmap
 %Dominio: image
 %Recorrido: boolean
 imageIsHexmap([_,_,_,[H|_]]) :-
-    pixrgbd(_,_,_,_, H ).
+    pixrgb(_,_,_,_, H ).
 
 %6)imageIsCompressed
 %Dominio: Image
@@ -204,15 +203,16 @@ abs(Intin, Intout):-
 %10) imageRGBToHex
 %Dominio:image X image
 
-imageRGBtoHex(I,[Color,Alto,Ancho,NewPixeles]):-
-    getColor_Compresed(I,Color),
-    getAlto(I,Alto),
-    getAncho(I,Ancho),
-    getPixels(I,Pixeles),
-    maplist(pixrgb_to_pixhex,Pixeles,NewPixeles).
+imageRGBtoHex(I, [Color, Alto, Ancho, NewPixeles]):-
+    getColor_Compresed(I, Color),
+    getAlto(I, Alto),
+    getAncho(I, Ancho),
+    getPixels(I, Pixeles),
+    maplist(pixrgb_to_pixhex, Pixeles, NewPixeles).
 
     
 pixrgb_to_pixhex(Pixelin,Pixelout):-
+    
     getx(Pixelin,X),
     gety(Pixelin,Y),
     getD(Pixelin,D),
@@ -250,3 +250,90 @@ numtohex(Int, Hex) :-
     (Rem2=15, Hex2 = 'F')),
     string_concat(Hex1,Hex2,Hex).
 
+
+isSameColor(Color,[_,_,Color,_]).
+
+%11)imageToHistogram
+%Dominio: image X histograma
+imageToHistogram(Imagen, Histograma):-
+    getPixels(Imagen, Pixels),
+    pixel_histogram(Pixels, Histograma).
+
+
+
+
+%caso base 1: cuando no hay mas pixeles, se devuelve el histograma
+pixel_histogram([],[]).
+
+%caso base 2: cuando no se ha hecho ningun histograma, es "el primer llamado"
+pixel_histogram(Pixels,[]):-
+     %se toma el primer pixel
+    getFirst(Pixels, Head_Pixel),
+    
+    %se toma el color del primer pixel
+    getColor(Head_Pixel,ColorPixel),   
+    
+    %se deja en una lista solo los pixeles del mismo color
+    include(isSameColor(ColorPixel),Pixels,Pixeles_mismocolor),
+    
+    %se saca el largo de esa lista para saber las repeticiones
+    length(Pixeles_mismocolor,Repeticiones),
+    
+     %se deja en una nueva lista los pixeles distintos al color ya agregado
+    exclude(isSameColor(ColorPixel),Pixels,NewPixeles),
+    
+      
+    %se llama a la funcion nuevamente con  la nueva lista de pixeles y histograma con el primer color 
+    pixel_histogram(NewPixeles,[Repeticiones,ColorPixel]).
+
+%caso recursivo
+pixel_histogram(Pixels,[[Repeticiones,ColorPixel]|Histograma]):-
+    %se toma el primer pixel
+    getFirst(Pixels, Head_Pixel),
+    
+    %se toma el color del primer pixel
+    getColor(Head_Pixel,ColorPixel),   
+    
+    %se deja en una lista solo los pixeles del mismo color
+    include(isSameColor(ColorPixel),Pixels,Pixeles_mismocolor),
+    
+    %se saca el largo de esa lista para saber las repeticiones
+    length(Pixeles_mismocolor,Repeticiones),
+    
+    
+    %se deja en una lista los pixeles distintos al color ya agregado
+    exclude(isSameColor(ColorPixel),Pixels,NewPixeles),
+    
+    %se llama a la funcion nuevamente con el nuevo histograma y la nueva lista de pixeles
+    pixel_histogram(NewPixeles,Histograma).
+    
+
+%12) imageRotate90
+%Dominio: Image X Image
+%Descripcion: Se invierten los valores entre ancho y alto y se rota cada pixel con otra funcion
+
+imageRotate90(ImagenIn,ImagenOut):-
+    getAlto(ImagenIn,Alto),
+    getAncho(ImagenIn,Ancho),
+    getPixels(ImagenIn,Pixeles),
+    maplist(rotatepixel(Alto),Pixeles,NewPixeles),
+    setAlto(ImagenIn,Ancho,ImageMod1),
+    setAncho(ImageMod1,Alto,ImageMod2),
+    setPixels(ImageMod2,NewPixeles,ImagenOut).
+
+    
+%rotatepixel
+%Dominio: AltoImagen X Pixel X Pixel
+%Descripcion: rota la cordenada del pixel en 90 grados hacia la derecha, manteniendo los demas valores
+%la nueva cordenada x es la cord y inicial, la nueva cordenada y es(AltoImagen-1)-Xinicial,
+
+rotatepixel(AltoImagen,Pixelin,PixelOut):-
+    getx(Pixelin,X),
+    gety(Pixelin,Y),
+    NewX is Y,
+    NewY is AltoImagen - 1 - X,
+    setx(Pixelin, NewX, Pixelmod),
+    sety(Pixelmod, NewY, PixelOut).
+    
+    
+    
