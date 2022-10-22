@@ -364,3 +364,29 @@ imageCompress(ImageIn,ImageCompressed):-
     %a la imagen anterior le agrega el color más frecuente para guardarlo en el tda
     setColor_Compressed(ImageMod,ColorFrecuente,ImageCompressed).
     
+%isSameCord
+%Dominio: CordenadaX x CordenadaY x Pixel
+%Descripción: Arroja true si las cordenadas del pixel coincide con las cordenadas entregadas
+
+isSameCord(X,Y,[X,Y,_,_]).
+
+
+%14)imageChangePixel
+%Dominio: Imagen x Pixel x Imagen
+%Descripción: Permite remplazar un pixel de una imagen, cambiandolo por uno que tenga
+%las mismas cordenadas que el pixel original
+
+
+imageChangePixel(ImagenIn,PixelFinal,ImagenOut):-
+    %se obtiene la lista de pixeles iniciales y las cordenadas x e y del pixel modificado
+    getPixels(ImagenIn,Pixeles),
+    getx(PixelFinal,X),
+    gety(PixelFinal,Y),
+    
+    %se deja una lista sin el pixel que coincida con las cordenadas del pixel modificado
+    exclude(isSameCord(X,Y),Pixeles,PixelesMod),
+    
+    %se agrega el pixel modificado a la lista modificada anteriormente y se crea una imagen con esta nueva lista
+    append([PixelFinal],PixelesMod,Pixeles_Out),
+
+    setPixels(ImagenIn,Pixeles_Out,ImagenOut).
