@@ -85,12 +85,8 @@ setbit([X,Y,_,D], NewBit, [X,Y,NewBit,D]):-
     NewBit = 0 ; NewBit = 1.
 sethex([X,Y,_,D], NewHex, [X,Y,NewHex,D]):-
     string(NewHex).
-setr([X,Y,[_,G,B],D],NewR, [X,Y,[NewR,G,B],D]):-
-    integer(NewR).
-setg([X,Y,[R,_,B],D], NewG, [X,Y,[R,NewG,B],D]):-
-    integer(NewG).
-setb([X,Y,[R,G,_],D], NewB, [X,Y,[R,G,NewB],D]):-
-    integer(NewB).   
+setrgb([X,Y,[_,_,_],D],NewR,NewG,NewB, [X,Y,[NewR,NewG,NewB],D]).
+
 setdD([X,Y,Color,_],NewD, [X,Y,Color,NewD]):-
     integer(NewD).
 
@@ -390,3 +386,14 @@ imageChangePixel(ImagenIn,PixelFinal,ImagenOut):-
     append([PixelFinal],PixelesMod,Pixeles_Out),
 
     setPixels(ImagenIn,Pixeles_Out,ImagenOut).
+
+
+
+invertColorRGB(PixelIn, PixelOut):-
+    getR(PixelIn,R),
+    getG(PixelIn,G),
+    getB(PixelIn,B),
+    NewR is 255 - R,
+    NewG is 255 - G,
+    NewB is 255 - B,
+    setrgb(PixelIn,NewR,NewG,NewB,PixelOut).
