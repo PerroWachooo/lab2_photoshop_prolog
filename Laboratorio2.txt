@@ -397,3 +397,44 @@ invertColorRGB(PixelIn, PixelOut):-
     NewG is 255 - G,
     NewB is 255 - B,
     setrgb(PixelIn,NewR,NewG,NewB,PixelOut).
+
+%pixelToString
+%Dominio: AnchoImagen X Pixel X String
+%Descripcion: cambia un pixel a una representación de string añadiendo '\t o \n donde corresponda
+pixelToString(Ancho,Pixelin,StringOut):-
+    gety(Pixelin, Y),
+    getColor(Pixelin, Color),
+    Limite is Ancho - 1,
+    
+    %si es un pixrgb, la lista de color se transforma a string con la funcion term_string, si no, se una atom_string
+    ((pixrgb(_,_,_,_,_,_,Pixelin),term_string(Color,Color_string));
+    (atom_string(Color,Color_string))),
+    
+    %si el pixel esta al final se le agrega un \n, si no, se le agrega un \t
+    ((Y < Limite, string_concat(Color_string,"\t   ",StringOut));
+     (Y = Limite, string_concat(Color_string,"\n   ",StringOut))).
+
+%imageToString
+%Dominio: Image X string
+%Descripción: Transforma una imagen en una respresentación de string
+
+imageToString(Imagen,String):-
+    getAncho(Imagen,Ancho),
+    getPixels(Imagen,Pixeles),
+    %se convierte la lista de pixeles un una lista de strings, donde cada elemento es un color
+    maplist(pixelToString(Ancho),Pixeles,List_Colors),
+    %se transforma la lista de strings en un solo string
+    listaToString(List_Colors,String).
+
+    
+%listaToString
+%Dominio: Lista de strings X String
+%Descripcion: Funcion recursiva natural, que convierte una lista de strings en un solo string
+
+%Caso base: Cuando no hay más elementos en la lista retorna un espacio vacio ("")
+listaToString([],"").
+
+%Recurcion: hace el llamado hasta llegar al caso base, desde ahí, se junta el elemnto con lo entregado por la llamada
+listaToString([H|T],String):-
+    listaToString(T,TailListString),
+    string_concat(H,TailListString,String).
