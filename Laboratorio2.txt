@@ -87,7 +87,7 @@ sethex([X,Y,_,D], NewHex, [X,Y,NewHex,D]):-
     string(NewHex).
 setrgb([X,Y,[_,_,_],D],NewR,NewG,NewB, [X,Y,[NewR,NewG,NewB],D]).
 
-setdD([X,Y,Color,_],NewD, [X,Y,Color,NewD]):-
+setD([X,Y,Color,_],NewD, [X,Y,Color,NewD]):-
     integer(NewD).
 
 %-----------------------------------Funciones----------------------------------
@@ -259,26 +259,7 @@ imageToHistogram(Imagen, Histograma):-
 %caso base 1: cuando no hay mas pixeles, se devuelve el histograma
 pixel_histogram([],[]).
 
-%caso base 2: cuando no se ha hecho ningun histograma, es "el primer llamado"
-pixel_histogram(Pixels,[]):-
-     %se toma el primer pixel
-    getHead(Pixels, Head_Pixel),
-    
-    %se toma el color del primer pixel
-    getColor(Head_Pixel,ColorPixel),   
-    
-    %se deja en una lista solo los pixeles del mismo color
-    include(isSameColor(ColorPixel),Pixels,Pixeles_mismocolor),
-    
-    %se saca el largo de esa lista para saber las repeticiones
-    length(Pixeles_mismocolor,Repeticiones),
-    
-     %se deja en una nueva lista los pixeles distintos al color ya agregado
-    exclude(isSameColor(ColorPixel),Pixels,NewPixeles),
-    
-      
-    %se llama a la funcion nuevamente con  la nueva lista de pixeles y histograma con el primer color 
-    pixel_histogram(NewPixeles,[Repeticiones,ColorPixel]).
+
 
 %caso recursivo
 pixel_histogram(Pixels,[[Repeticiones,ColorPixel]|Histograma]):-
@@ -438,3 +419,71 @@ listaToString([],"").
 listaToString([H|T],String):-
     listaToString(T,TailListString),
     string_concat(H,TailListString,String).
+
+%isSameD (se usa en imageDepthLayers)
+%Dominio: Profundidad X Pixel
+%Descripicon: da true si la profundidad del pixel es igual a la entregada
+isSameD(D,[_,_,_,D]).
+
+%depthSeparation(se usa en imageDepthLayers)
+%Dominio: Lista De pixeles X lista de listas de pixeles 
+%Descripcion: Separa los pixeles de una lista un sublistas de pixeles con la misma profundidad
+%Recursión Natural
+
+%Caso base, llega al final y empieza retornar la lista
+depthSeparation([],[]).
+
+%Caso recursivo: separa los pixeles dependiendo de la profundidad del primero y vuelve a hacer un llamado con los pixeles
+% con distintas profundidades hasta que la lista de pixeles originales se acabe
+depthSeparation(PixelesOriginales,[Profundidad_actual|Profundiades_Restantes]):-
+    %se obtiene el primer pixel
+    getHead(PixelesOriginales,Head_Pixel),
+    %se le saca la profundiad
+    getD(Head_Pixel,D),
+    %filtra los pixeles originales dejndo solo los que tengan la misma profundiad del primer pixel
+    include(isSameD(D),PixelesOriginales,Profundidad_actual),
+    %filtra los pixeles originales dejndo solo los que tengan distinta profundiad del primer pixel
+    exclude(isSameD(D),PixelesOriginales,Pixeles_restantes),
+    %vuelve a hacer un llamado con los pixeles que faltan por agrupar en otras profundiades
+    depthSeparation(Pixeles_restantes,Profundiades_Restantes).
+    
+%rellenoCapas (se usa en imageDepthLayers)
+%Dominio: Imagen X Lista De pixeles x Imagen
+%Descripción: Crea una imagen nueva, con pixeles de la misma profundidad, remplazando solo los pixeles 
+%de la imagen original que estan en otra profundiad distinta a la de los pixeles entregados dejandolos como color blanco
+
+rellenoCapas(ImagenOriginal,PixelesCapa, ImagenCapa):-
+    %se obtiene la lista original de pixeles
+    getPixels(ImagenOriginal,PixelesOriginales),
+    %se obtiene el primer pixel de la lista de entrada para sabe su profundidad
+    getHead(PixelesCapa,Head),
+    getD(Head,D),
+    %se filtra la lista de pixeles original dejando solo los que no esten en la profundad sacada
+    exclude(isSameD(D),PixelesOriginales,PixelesDistintoD),
+    %los pixeles filtrados se les cambia por pixeles de color blanco en la misma profundiad
+    maplist(depthAndColorChange(D),PixelesDistintoD,Relleno),
+    %se une los pixeles de color blanco con los pixeles de la misma profundiad
+    append(PixelesCapa,Relleno,PixelesRellenados),
+    %se crea otra imagen similar a la original, solo cambiando los pixeles
+    setPixels(ImagenOriginal,PixelesRellenados,ImagenCapa).
+
+%depthAndColorChange (se usa en imageDepthLayers)
+%Dominio: Profundidad X Pixel X Pixel
+%Descripcion: A El pixel de entrada, le modifica la profundidad por la entregada y su color por uno blanco
+depthAndColorChange(NewD,PixelIn,PixelOut):-
+    %dependiendo de que tipo de pixel sea, se le cambia a color blanco en su formato
+    (   (pixrgb(_,_,_,_,_,_,PixelIn),setD(PixelIn,NewD,PixelMod),setrgb(PixelMod,255,255,255,PixelOut));
+        (pixhex(_,_,_,_,PixelIn), setD(PixelIn,NewD,PixelMod),sethex(PixelMod,"FFFFFF",PixelOut));
+        (pixbit(_,_,_,_,PixelIn), setD(PixelIn,NewD,PixelMod),setbit(PixelMod,1,PixelOut))).
+
+%imageDepthLayers
+%Domino: Imagen X lista de imagenes
+%Descripción: Separa las imagenes por capas de profundiad los pixeles que estan
+% en otras capas son sustituidos por pixeles de color blaco para cada imagen
+
+imageDepthLayers(Imagen,ListaImagenes):-
+    getPixels(Imagen,Pixeles),
+    %se separan los pixeles originales por capas de profundiad
+    depthSeparation(Pixeles,PixelesAgrupadosD),
+    %para cada capa se crea una imagen, dejando estas imagenes en la lista de imagenes de salida
+    maplist(rellenoCapas(Imagen),PixelesAgrupadosD,ListaImagenes).
