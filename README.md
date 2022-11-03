@@ -1,5 +1,6 @@
 # Lab2
-Laboratorio 2 (Paradigma logico)
+
+Laboratorio 2 (Paradigma logico).
 
 Para el uso de este codigo se tiene que consultar el arhcivo "tdaImagen_21165824_BritoGarrido" desde SWI-Prolog o Swish-Prolog, desde ahí se tiene que copiar alguna de las lineas del script de pruebas y pegarlas en la caja de consultas.
 
